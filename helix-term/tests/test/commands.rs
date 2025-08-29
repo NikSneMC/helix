@@ -328,14 +328,14 @@ async fn test_extend_line() -> anyhow::Result<()> {
             #[l|]#orem
             ipsum
             dolor
-
+            
             "},
         "x2x",
         indoc! {"\
             #[lorem
             ipsum
             dolor\n|]#
-
+            
             "},
     ))
     .await?;
@@ -345,13 +345,13 @@ async fn test_extend_line() -> anyhow::Result<()> {
         indoc! {"\
             #[l|]#orem
             ipsum
-
+            
             "},
         "2x",
         indoc! {"\
             #[lorem
             ipsum\n|]#
-
+            
             "},
     ))
     .await?;
@@ -498,7 +498,7 @@ async fn test_insert_with_indent() -> anyhow::Result<()> {
             if let Some(_) = None {
 
             }
-
+         
         }
 
         fn bar() {
@@ -663,15 +663,15 @@ async fn test_join_selections_space() -> anyhow::Result<()> {
     // join with retained trailing spaces
     test((
         indoc! {"\
-            #[aaa
+            #[aaa   
 
-            bb
+            bb  
 
             c |]#
         "},
         "<A-J>",
         indoc! {"\
-            aaa   #[ |]#bb  #( |)#c
+            aaa   #[ |]#bb  #( |)#c 
         "},
     ))
     .await?;
