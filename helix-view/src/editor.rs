@@ -278,7 +278,6 @@ pub struct FileManagerConfig {
     pub sort: DirectorySort,
 }
 
-
 fn serialize_alphabet<S>(alphabet: &[char], serializer: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
