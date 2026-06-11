@@ -2,7 +2,7 @@ pub mod default;
 pub mod macros;
 
 pub use crate::commands::MappableCommand;
-pub use default::default;
+pub use default::{default, file_manager_default};
 
 use arc_swap::{
     access::{DynAccess, DynGuard},
@@ -18,6 +18,7 @@ use std::{
     ops::{Deref, DerefMut},
     sync::Arc,
 };
+
 
 #[derive(Debug, Clone, Default, Deserialize)]
 pub struct KeyTrieNode {
