@@ -1697,7 +1697,7 @@ fn find_char(cx: &mut Context, direction: Direction, inclusive: bool, extend: bo
                     Direction::Forward => find_next_char_impl,
                     Direction::Backward => find_prev_char_impl,
                 };
-                find_char_impl(editor, &search_fn, inclusive, extend, '	', count);
+                find_char_impl(editor, &search_fn, inclusive, extend, '\t', count);
             })),
             KeyCode::Char(ch) => Some(Box::new(move |editor: &mut Editor| {
                 let search_fn = match direction {
@@ -6444,10 +6444,9 @@ fn goto_ts_object_impl(cx: &mut Context, object: &'static str, direction: Direct
     let count = cx.count();
     let motion = move |editor: &mut Editor| {
         let (view, doc) = current!(editor);
-        let loader = editor.syn_loader.load();
+        let loader = editor.syn_loader.load_full();
         if let Some(syntax) = doc.syntax() {
             let text = doc.text().slice(..);
-            let root = syntax.tree().root_node();
             let annotations = view.text_annotations(doc, None);
 
             let selection = doc.selection(view.id).clone().transform(|range| {
@@ -6457,7 +6456,6 @@ fn goto_ts_object_impl(cx: &mut Context, object: &'static str, direction: Direct
                     range,
                     object,
                     direction,
-                    &root,
                     syntax,
                     &loader,
                     count,
@@ -7742,7 +7740,7 @@ fn toggle_fold(cx: &mut Context) {
     let (view, doc) = current!(cx.editor);
     let text = doc.text().slice(..);
     let cursor = doc.selection(view.id).primary().cursor(text);
-    let loader = cx.editor.syn_loader.load();
+    let loader = cx.editor.syn_loader.load_full();
 
     let Some(syntax) = doc.syntax() else {
         cx.editor

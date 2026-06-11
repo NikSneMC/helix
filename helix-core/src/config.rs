@@ -49,7 +49,7 @@ pub fn user_lang_config(insecure: bool) -> Result<Configuration, toml::de::Error
 pub fn user_lang_loader(insecure: bool) -> Result<Loader, LanguageLoaderError> {
     let config_val = helix_loader::config::user_lang_config(insecure)
         .map_err(LanguageLoaderError::DeserializeError)?;
-    let mut config = config_val.clone().try_into().map_err(|e| {
+    let mut config: Configuration = config_val.clone().try_into().map_err(|e| {
         if let Some(languages) = config_val.get("language").and_then(|v| v.as_array()) {
             for lang in languages.iter() {
                 let res: Result<LanguageConfiguration, _> = lang.clone().try_into();

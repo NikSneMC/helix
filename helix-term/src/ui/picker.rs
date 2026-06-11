@@ -957,12 +957,13 @@ impl<T: 'static + Send + Sync, D: 'static + Send + Sync> Picker<T, D> {
                 }
             }
 
-            let loader = cx.editor.syn_loader.load();
+            let loader = cx.editor.syn_loader.load_full();
             let config = cx.editor.config();
+            let annotations = TextAnnotations::default();
 
             let syntax_highlighter = EditorView::doc_syntax_highlighter(
                 doc,
-                &TextAnnotations::default(),
+                &annotations,
                 offset.anchor,
                 area.height,
                 &loader,
@@ -975,6 +976,7 @@ impl<T: 'static + Send + Sync, D: 'static + Send + Sync> Picker<T, D> {
             {
                 if let Some(overlay) = EditorView::doc_rainbow_highlights(
                     doc,
+                    &annotations,
                     offset.anchor,
                     area.height,
                     &cx.editor.theme,

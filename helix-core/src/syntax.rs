@@ -1072,7 +1072,7 @@ impl TextObjectQuery {
         capture_names: &'a [&str],
         node: &Node<'a>,
         slice: RopeSlice<'a>,
-    ) -> impl Iterator<Item = (Capture, CapturedNode)> + use<'a> {
+    ) -> impl Iterator<Item = (Capture, CapturedNode<'a>)> + use<'a> {
         let mut cursor = self.cursor(node, slice);
         let captures: Vec<_> = capture_names
             .iter()
@@ -1104,7 +1104,7 @@ impl TextObjectQuery {
         &'a self,
         node: &Node<'a>,
         slice: RopeSlice<'a>,
-    ) -> QueryCursor<'_, '_, RopeInput> {
+    ) -> QueryCursor<'a, 'a, RopeInput<'a>> {
         InactiveQueryCursor::new(0..u32::MAX, TREE_SITTER_MATCH_LIMIT).execute_query(
             &self.query,
             node,

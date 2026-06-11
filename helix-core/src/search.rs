@@ -29,7 +29,7 @@ impl<F: Fn(RopeSlice) -> bool> GraphemeMatcher for F {
 // Finds the positions of the nth matching character in the given direction
 // starting from the pos gap-index (see Range struct for explanation).
 pub fn find_nth_char(
-    mut n: usize,
+    n: usize,
     text: RopeSlice,
     ch: char,
     pos: usize,

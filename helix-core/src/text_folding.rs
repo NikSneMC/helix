@@ -3,15 +3,15 @@
 //! A fold consists of the following components:
 //!
 //! 1. **`Object`** - a type of fold, which indicates how a user has folded the text.
-//!     For example, the object is **Selection** when a user has folded arbitrarily selected text.
-//!     And the object is **TextObject** when a user has folded a text object, such as a function, class, and so on.
+//!    For example, the object is **Selection** when a user has folded arbitrarily selected text.
+//!    And the object is **TextObject** when a user has folded a text object, such as a function, class, and so on.
 //!
 //! 2. **`Header`** - a fragment that describes what is folded.
-//!     For example, the header of a folded function is its signature.
-//!     Additionally, headers are used to unfold text.
+//!    For example, the header of a folded function is its signature.
+//!    Additionally, headers are used to unfold text.
 //!
 //! 3. **`Target`** - a fragment that defines the block that will be folded.
-//!     For example, for a function, the target is a span of the **function.inside** capture.
+//!    For example, for a function, the target is a span of the **function.inside** capture.
 //!
 //! 4. **`Block`** - a folded (non-visible) text. It is a range of lines.
 //!
@@ -144,7 +144,7 @@ pub struct StartFoldPoint {
 
 impl StartFoldPoint {
     /// Returns the fold.
-    pub fn fold<'a>(&'a self, container: &'a FoldContainer) -> Fold {
+    pub fn fold<'a>(&'a self, container: &'a FoldContainer) -> Fold<'a> {
         Fold::new(self, &container.end_points[self.link])
     }
 
@@ -206,7 +206,7 @@ pub struct EndFoldPoint {
 
 impl EndFoldPoint {
     /// Returns the fold.
-    pub fn fold<'a>(&'a self, container: &'a FoldContainer) -> Fold {
+    pub fn fold<'a>(&'a self, container: &'a FoldContainer) -> Fold<'a> {
         Fold::new(&container.start_points[self.link], self)
     }
 
@@ -492,8 +492,8 @@ impl FoldContainer {
         &self,
         object: &FoldObject,
         range: &ops::RangeInclusive<usize>,
-        mut get_range: impl FnMut(Fold) -> ops::RangeInclusive<usize>,
-    ) -> Option<Fold> {
+        mut get_range: impl FnMut(Fold<'_>) -> ops::RangeInclusive<usize>,
+    ) -> Option<Fold<'_>> {
         self.start_points
             .binary_search_by(|sfp| {
                 let fold_range = get_range(sfp.fold(self));
@@ -528,8 +528,8 @@ impl FoldContainer {
     pub fn fold_containing(
         &self,
         idx: usize,
-        mut get_range: impl FnMut(Fold) -> ops::RangeInclusive<usize>,
-    ) -> Option<Fold> {
+        mut get_range: impl FnMut(Fold<'_>) -> ops::RangeInclusive<usize>,
+    ) -> Option<Fold<'_>> {
         let end_idx = self.end_points.partition_point(|efp| {
             let range = get_range(efp.fold(self));
             *range.end() < idx
@@ -537,10 +537,7 @@ impl FoldContainer {
 
         let mut fold = self.end_points.get(end_idx)?.fold(self);
         while !get_range(fold).contains(&idx) {
-            fold = match fold.super_fold(self) {
-                Some(fold) => fold,
-                None => return None,
-            }
+            fold = fold.super_fold(self)?;
         }
 
         Some(fold)
@@ -549,8 +546,8 @@ impl FoldContainer {
     pub fn superest_fold_containing(
         &self,
         idx: usize,
-        get_range: impl FnMut(Fold) -> ops::RangeInclusive<usize>,
-    ) -> Option<Fold> {
+        get_range: impl FnMut(Fold<'_>) -> ops::RangeInclusive<usize>,
+    ) -> Option<Fold<'_>> {
         self.fold_containing(idx, get_range)
             .map(|fold| fold.superest_fold(self).unwrap_or(fold))
     }
@@ -821,7 +818,11 @@ impl<'a> FoldAnnotations<'a> {
     }
 
     /// Returns the previous fold if `idx` is equal to `get_idx(fold)`.
-    pub fn consume_prev(&self, idx: usize, mut get_idx: impl FnMut(Fold) -> usize) -> Option<Fold> {
+    pub fn consume_prev(
+        &self,
+        idx: usize,
+        mut get_idx: impl FnMut(Fold<'_>) -> usize,
+    ) -> Option<Fold<'_>> {
         let container = self.container()?;
         let current_index: usize = (self.current_index.get() - 1).try_into().ok()?;
         let fold = container
@@ -854,8 +855,8 @@ impl<'a> FoldAnnotations<'a> {
     pub fn superest_fold_containing(
         &self,
         idx: usize,
-        get_range: impl FnMut(Fold) -> ops::RangeInclusive<usize>,
-    ) -> Option<Fold> {
+        get_range: impl FnMut(Fold<'_>) -> ops::RangeInclusive<usize>,
+    ) -> Option<Fold<'_>> {
         self.container()
             .and_then(|container| container.superest_fold_containing(idx, get_range))
     }

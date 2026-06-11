@@ -283,7 +283,7 @@ pub fn file_picker(editor: &Editor, root: PathBuf) -> FilePicker {
 
         match cx.editor.open(&path, action) {
             Ok(doc_id) => {
-                if old_id.map_or(true, |id| id != doc_id) {
+                if old_id != Some(doc_id) {
                     default_folding(cx.editor);
                 }
             }
@@ -364,7 +364,7 @@ pub fn file_explorer(root: PathBuf, editor: &Editor) -> Result<FileExplorer, std
 
                 match cx.editor.open(&path, action) {
                     Ok(doc_id) => {
-                        if old_id.map_or(true, |id| id != doc_id) {
+                        if old_id != Some(doc_id) {
                             default_folding(cx.editor);
                         }
                     }
