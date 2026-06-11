@@ -434,6 +434,8 @@ pub struct Config {
     /// Whether to enable Kitty Keyboard Protocol
     pub kitty_keyboard_protocol: KittyKeyboardProtocolConfig,
     pub buffer_picker: BufferPickerConfig,
+    /// Defines which text objects will be folded when a document is opened.
+    pub fold_textobjects: Vec<String>,
     /// Whether to implicitly trust every workspace or not
     pub insecure: bool,
 }
@@ -1159,6 +1161,7 @@ impl Default for Config {
             rainbow_brackets: false,
             kitty_keyboard_protocol: Default::default(),
             buffer_picker: BufferPickerConfig::default(),
+            fold_textobjects: Vec::new(),
             insecure: false,
         }
     }
