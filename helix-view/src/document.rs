@@ -42,8 +42,7 @@ use helix_core::{
     indent::{auto_detect_indent_style, IndentStyle},
     line_ending::auto_detect_line_ending,
     syntax::{self, config::LanguageConfiguration},
-    ChangeSet, Diagnostic, LineEnding, Range, Rope, RopeBuilder, RopeSlice, Selection, Syntax,
-    Transaction,
+    ChangeSet, Diagnostic, LineEnding, Range, Rope, RopeBuilder, Selection, Syntax, Transaction,
 };
 
 use crate::{
@@ -63,25 +62,6 @@ const DEFAULT_TAB_WIDTH: usize = 4;
 pub const DEFAULT_LANGUAGE_NAME: &str = "text";
 
 pub const SCRATCH_BUFFER_NAME: &str = "[scratch]";
-
-fn line_end_char_idx(text: RopeSlice, line: usize) -> Option<usize> {
-    if line >= text.len_lines() {
-        return None;
-    }
-
-    let line_start = text.line_to_char(line);
-    let next_line_start = text.line_to_char((line + 1).min(text.len_lines()));
-    let mut line_end = next_line_start;
-
-    if line_end > line_start && text.char(line_end - 1) == '\n' {
-        line_end -= 1;
-    }
-    if line_end > line_start && text.char(line_end - 1) == '\r' {
-        line_end -= 1;
-    }
-
-    Some(line_end)
-}
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum Mode {
@@ -171,8 +151,6 @@ pub struct Document {
     ///
     /// To know if they're up-to-date, check the `id` field in `DocumentInlayHints`.
     pub(crate) inlay_hints: HashMap<ViewId, DocumentInlayHints>,
-    /// Current-line VCS blame annotations for the document, by view.
-    pub(crate) line_blame_annotations: HashMap<ViewId, Vec<InlineAnnotation>>,
     /// Jump label overlays for each view.
     pub(crate) jump_labels: HashMap<ViewId, Vec<Overlay>>,
     /// LSP document highlights for each view, stored as char ranges.
@@ -840,7 +818,6 @@ impl Document {
             text,
             selections: HashMap::default(),
             inlay_hints: HashMap::default(),
-            line_blame_annotations: HashMap::default(),
             document_highlights: HashMap::default(),
             fold_container: HashMap::default(),
             inlay_hints_oudated: false,
@@ -1553,7 +1530,6 @@ impl Document {
         self.selections.remove(&view_id);
         self.view_data.remove(&view_id);
         self.inlay_hints.remove(&view_id);
-        self.line_blame_annotations.remove(&view_id);
         self.jump_labels.remove(&view_id);
         self.breadcrumbs.remove(&view_id);
         self.document_highlights.remove(&view_id);
@@ -2514,38 +2490,6 @@ impl Document {
 
     pub fn remove_jump_labels(&mut self, view_id: ViewId) {
         self.jump_labels.remove(&view_id);
-    }
-
-    pub fn set_line_blame(&mut self, view_id: ViewId, line: usize, text: String) {
-        let Some(char_idx) = line_end_char_idx(self.text().slice(..), line) else {
-            self.clear_line_blame(view_id);
-            return;
-        };
-
-        self.line_blame_annotations
-            .insert(view_id, vec![InlineAnnotation::new(char_idx, text)]);
-    }
-
-    pub fn clear_line_blame(&mut self, view_id: ViewId) {
-        self.line_blame_annotations.remove(&view_id);
-    }
-
-    pub fn clear_all_line_blames(&mut self) {
-        self.line_blame_annotations.clear();
-    }
-
-    pub fn has_line_blame_for_line(&self, view_id: ViewId, line: usize) -> bool {
-        let Some(annotation) = self
-            .line_blame_annotations
-            .get(&view_id)
-            .and_then(|annotations| annotations.first())
-        else {
-            return false;
-        };
-
-        self.text()
-            .char_to_line(annotation.char_idx.min(self.text().len_chars()))
-            == line
     }
 
     #[inline(always)]
