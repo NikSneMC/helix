@@ -951,7 +951,6 @@ async fn align_selections_with_varying_columns() -> anyhow::Result<()> {
     Ok(())
 }
 
-
 // Line selection movement tests
 #[tokio::test(flavor = "multi_thread")]
 async fn test_move_selection_single_selection_up() -> anyhow::Result<()> {

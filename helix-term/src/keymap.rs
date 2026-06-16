@@ -19,7 +19,6 @@ use std::{
     sync::Arc,
 };
 
-
 #[derive(Debug, Clone, Default, Deserialize)]
 pub struct KeyTrieNode {
     /// A label for keys coming under this node, like "Goto mode"

@@ -1676,7 +1676,6 @@ fn extend_next_sub_word_end(cx: &mut Context) {
     extend_word_impl(cx, movement::move_next_sub_word_end)
 }
 
-
 fn find_char(cx: &mut Context, direction: Direction, inclusive: bool, extend: bool) {
     // TODO: count is reset to 1 before next key so we move it into the closure here.
     // Would be nice to carry over.
@@ -1690,7 +1689,14 @@ fn find_char(cx: &mut Context, direction: Direction, inclusive: bool, extend: bo
                     Direction::Forward => find_next_char_impl,
                     Direction::Backward => find_prev_char_impl,
                 };
-                find_char_impl(editor, &search_fn, inclusive, extend, rope_is_line_ending, count);
+                find_char_impl(
+                    editor,
+                    &search_fn,
+                    inclusive,
+                    extend,
+                    rope_is_line_ending,
+                    count,
+                );
             })),
             KeyCode::Tab => Some(Box::new(move |editor: &mut Editor| {
                 let search_fn = match direction {
