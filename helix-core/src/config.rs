@@ -1,3 +1,5 @@
+use helix_loader::workspace_trust::WorkspaceTrust;
+
 use crate::syntax::{
     config::{Configuration, LanguageConfiguration},
     Loader, LoaderError,
@@ -39,15 +41,15 @@ impl std::fmt::Display for LanguageLoaderError {
 impl std::error::Error for LanguageLoaderError {}
 
 /// Language configuration based on user configured languages.toml.
-pub fn user_lang_config(insecure: bool) -> Result<Configuration, toml::de::Error> {
-    let mut config: Configuration = helix_loader::config::user_lang_config(insecure)?.try_into()?;
+pub fn user_lang_config(trust: &WorkspaceTrust) -> Result<Configuration, toml::de::Error> {
+    let mut config: Configuration = helix_loader::config::user_lang_config(trust)?.try_into()?;
     config.apply_global_language_servers();
     Ok(config)
 }
 
 /// Language configuration loader based on user configured languages.toml.
-pub fn user_lang_loader(insecure: bool) -> Result<Loader, LanguageLoaderError> {
-    let config_val = helix_loader::config::user_lang_config(insecure)
+pub fn user_lang_loader(trust: &WorkspaceTrust) -> Result<Loader, LanguageLoaderError> {
+    let config_val = helix_loader::config::user_lang_config(trust)
         .map_err(LanguageLoaderError::DeserializeError)?;
     let mut config: Configuration = config_val.clone().try_into().map_err(|e| {
         if let Some(languages) = config_val.get("language").and_then(|v| v.as_array()) {
